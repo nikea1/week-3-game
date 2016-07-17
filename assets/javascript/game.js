@@ -1,88 +1,152 @@
-
-//initialize dictionary
-var words = [
+//creates game properties and functions
+var hangmanGame = {
+	//defines dictionary
+	dictionary:[
 			"Jungle Book",
 			"Cinderella", 
 			"Lion King",
 			"Frozen",
 			"Aladdin",
-			"Beauty and the Beast",
-			"Snow White and the Seven Dwarfs",
+			"Beauty And The Beast",
+			"Snow White And The Seven Dwarfs",
 			"Zootopia",
 			"Tangled",
 			"Inside Out",
-			"Princess and the Frog",
+			"Princess And The Frog",
 			"Finding Nemo",
 			"Mulan",
 			"Sleeping Beauty",
 			"Hercules",
 			"Peter Pan",
-			"Hunchback of Notre Dame",
+			"Hunchback Of Notre Dame",
 			"Mary Poppins",
 			"Incredibles",
 			"Fantasia",
 			"Robin Hood",
 			"Pocahontas",
 			"Pinochio",
-			"Lilo and Stitch",
-			"Alice in Wonderland",
+			"Lilo And Stitch",
+			"Alice In Wonderland",
 			"The Aristocats",
 			"The Nightmare Before Christmas",
-			"Oliver and Company",
+			"Oliver And Company",
+			],
 
-			];
+			word:"",	//initaizes word to be selected for game
+			letterBucket:[],	//initializes Letter bucket
+			letterUsed:[],		//initializes letter used list
+			board:[],			//initalizes game board
+			chances:10,			//initalizes the amount of wrong guesses left
+			flag:false,			//initializes userCorrect flag		
+			win:0,				//initializes win counter
+			newGame:true,		//initailizes new game flag
+			winner:false,		//initalizes winner flag
 
-//initialize bucket
-var letterCheck = [];
+			setWord:function(){
+				var r = Math.floor(Math.random()*this.dictionary.length);	//randomly selects new word
+				this.word = this.dictionary[r];								//choses word to guess this round
+			},
 
-//initalizes used list
-var lettersUsed = [];
-//set hangman guesses
-var chances;
+			getWord:function(){
+				return this.word;											//returns selected word
+			},
 
-//set found flag to false
-var flag;
+			initBucket:function(){
+				for (var i = 25; i >= 0; i--) {
+					this.letterBucket[i] = 0;								//initalizes bucket for new game
+				}
+			},
 
-//set newGame flag to false
-var newGame = true;
+			setBucket:function(code){
+				this.letterBucket[code] = 1;								//flags letter as used
+			},
 
-//set isWinner flag to false
-var isWinner;
-	
+			getBucket:function(code){
+				return this.letterBucket[code];								//returns list of used words
+			},
+
+			initUsedList:function(){
+
+				this.letterUsed = [];										//initalizes Used list
+			},
+
+			addToUsedList:function(letter){
+				this.letterUsed.push(letter);								//adds to used list
+			},
+
+			getUsedList:function(){
+				return this.letterUsed;										//returns list of used letters
+			},
+
+			initBoard:function(){
+				this.board = [];
+				for (var i = this.word.length - 1; i >= 0; i--) {
+					if(this.word.charAt(i) != " ")
+						this.board[i] = "_";								//initalizes board with correct amount of spaces
+					else 
+						this.board[i] = " ";
+				}
+			},
+
+			updateBoard:function(index, char){
+
+				this.board[index] = char;									//updates game board
+			},
+
+			getBoard:function(){
+				return this.board;											//returns current game board
+			},
+
+			initGuesses:function(){
+				this.chances = 10;
+			},
+
+			getGuesses:function(){
+				return this.chances;										//get current amount of guess left
+			},
+
+			decrementGuesses:function(){
+				this.chances--;												//decrement guesses
+			},
+
+			getWins:function(){
+				return this.win;											//get number of wins
+			},
+
+			incrementWins:function(){
+				this.win++;													//add wins
+			},
+
+			setIsRight:function(bool){
+				this.flag = bool;											//sets userguess flag
+			},
+
+			isRight:function(){
+				return this.flag;											//returns userguess
+			},
+			setGameStatus:function(bool){
+				this.newGame = bool;										//sets game status
+			},
+			isNewGame:function(){
+				return this.newGame;										//returns game status
+			},
+
+			isWinner:function(){
+				return this.winner;											//return winner status
+			},
+
+			setWinner:function(bool){
+				this.winner = bool;											//set winner status
+			}
+
+
+};
+
+
 //canvas stuff goes here
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d");
-ctx.fillStyle = "#FFFFFF";
-ctx.fillRect(0,0,300,300);
 
-
-/*
-var hangmanSegments = [
-						drawLine(ctx, 75, 250, 225, 250), 	//base
-						drawLine(ctx, 150, 50, 150, 250), 	//pole
-						drawLine(ctx, 150, 50, 225, 50), 	//beam
-						drawLine(ctx, 225, 50, 225, 75),	//rope
-						drawCircle(ctx, 225, 95, 20),		//head
-						drawLine(ctx, 225, 115, 225, 180),	//body
-						drawLine(ctx, 225, 115, 240, 165), 	//right arm
-						drawLine(ctx, 225, 115, 210, 165), 	//left arm
-						drawLine(ctx, 225, 180, 235, 240), 	//right leg
-						drawLine(ctx, 225, 180, 215, 240)	//left leg
-						];
-*/
-drawClear(ctx);
-//draw hangman picture
-/*for (var i = hangmanSegments.length - 1; i >= 0; i--) {
-	hangmanSegments[i];
-}*/
-
-//drawClear(ctx);
-
-var r; //random selection based of number of words in dictionary
-var word;//choses word to guess this round based on random number generated above
-var board;	//initialize board to put correct guesses
-
-var win = 0;
 
 function drawLine(ctx, x1, y1, x2, y2){
 
@@ -99,158 +163,168 @@ function drawCircle(ctx, x, y, r){
 }
 
 function drawClear(ctx){
-	ctx.fillStyle = "#FFFFFF";
-	ctx.fillRect(0,0,300,300);
+	//ctx.clearRect(0,0,300,300);
+
+	//completely resets canvas pipeline
+	canvas.width = canvas.width;
 }
 
 //input from keyboard
 document.onkeyup = function(e){
 
-	if(newGame){//reset game
+	if(hangmanGame.isNewGame()){//reset game
 		
-		drawClear(ctx);
+		drawClear(ctx);//clears canvas
 
-		chances = 10;	//reset number of chances
-		document.getElementById("guesses").innerHTML = chances;
+		
+		hangmanGame.initGuesses();
+		
+		document.getElementById("guesses").innerHTML = hangmanGame.getGuesses();//resets guesses on screen
 
-		flag = false;	//mark guess flag as false
+		hangmanGame.setIsRight(false) ;	
 
-		isWinner = false;	//set winner flag to false
+		hangmanGame.setWinner(false);	
 
 		//canvas
 
-		//initial letter check bucket
-		for (var i = 25; i >= 0; i--) {
-			letterCheck[i] = 0;
-		}
+		hangmanGame.initBucket();
 
-		lettersUsed = [];
-		document.getElementById("letters").innerHTML = lettersUsed;
+		hangmanGame.initUsedList();
 		
-		r = Math.floor(Math.random()*words.length); //randomly selects new word
-		word = words[r];	//choses word to guess this round
-		board = [];	//initialize board
+		document.getElementById("letters").innerHTML = hangmanGame.getUsedList(); //resets letter list on screen
+		
+		//get word for new game
+		hangmanGame.setWord();
 
-		for (var i = word.length - 1; i >= 0; i--) {
-			if(word.charAt(i) != " ")
-				board[i] = "_";
-			else 
-				board[i] = " "
-		}
+		console.log("getWord " + hangmanGame.getWord());
+
+		hangmanGame.initBoard();
 
 		//display initialized board
 		var getBoard = document.getElementById("gameboard");
-		console.log(getBoard);
-		getBoard.innerHTML = board.join(" ");
-
 		
+		console.log(getBoard);
+		
+		//getBoard.innerHTML = board.join(" ");
+		getBoard.innerHTML = hangmanGame.getBoard().join(" ");
 
-		newGame = false;	//set newGame flag to false
+		hangmanGame.setGameStatus(false);	//set newGame flag to false
 	}
 	else{
-		//console.log("Keying in... " + event.keyCode);
+		
 		var bucketKey = event.keyCode - 65; //converts keycode to bucket index
 
-		if(chances >= 1){	//run if there are guesses left
-
-			if((bucketKey >= 0 && bucketKey < 26)&& letterCheck[bucketKey] == 0){ //check if bucket is empty
+		if(hangmanGame.getGuesses() >= 1){	//run if there are guesses left
+			
+			console.log("get bucket " + hangmanGame.getBucket(bucketKey));
+			
+			if((bucketKey >= 0 && bucketKey < 26)&& /*letterCheck[bucketKey]*/hangmanGame.getBucket(bucketKey) == 0){ //check if bucket is empty
 							
 				console.log(event.keyCode);
+				
 				var userGuess = String.fromCharCode(event.keyCode).toLowerCase(); //get keyed in letter
 
-				for(var i = 0; i < word.length; i++){ //scan through word and fill board
-					//console.log(word);
-					//console.log(word.charAt(i) + " " + userGuess);
-					if (word.toLowerCase().charAt(i) == userGuess.charAt(0)){	//compare each letter in word with user's guess
+				for(var i = 0; i < hangmanGame.getWord().length; i++){ //scan through word and fill board
+					
+					if (hangmanGame.getWord().toLowerCase().charAt(i) == userGuess.charAt(0)){	//compare each letter in word with user's guess
 
-						board[i] = word.charAt(i);	//if there is a match add all instance of guessed letter to the board
-						
-						if(board.join("") == word)// check if word is solved 
+						hangmanGame.updateBoard(i, hangmanGame.getWord().charAt(i));
+
+						if(hangmanGame.getBoard().join("") == hangmanGame.getWord())// check if word is solved 
 						{
-							isWinner = true; // if true search is over, player won the game. Break out of loop
+							hangmanGame.setWinner(true); // if true search is over, player won the game. Break out of loop
+							
 							break;
 						}
 
-						flag = true;// flag guess as correct
-					}
+						hangmanGame.setIsRight(true); // flag guess as correct
+					}//if statement end
 					
-				}//for loop
+				}//for loop end
 
 				var getBoard = document.getElementById("gameboard");
 				console.log(getBoard);
-				getBoard.innerHTML = board.join(" ");
-				console.log(board.join(" "));
+				console.log(hangmanGame.getBoard());
+				getBoard.innerHTML = /*board*/hangmanGame.getBoard().join(" ");
+				console.log(/*board*/hangmanGame.getBoard().join(" "));
 
-				if(!isWinner){	//if player has not won yet
+				if(!hangmanGame.isWinner()){	//if player has not won yet
 						
-					if(!flag) {	//if guess was wrong decrease number of chances to guess
-						chances--;
-						console.log(chances);	
-						if(chances == 9)
-							drawLine(ctx, 75, 250, 225, 250);
-						if(chances == 8)
-							drawLine(ctx, 150, 50, 150, 250);
-						if(chances == 7)
-							drawLine(ctx, 150, 50, 225, 50);
-						if(chances == 6)
-							drawLine(ctx, 225, 50, 225, 75);
-						if(chances == 5)
-							drawCircle(ctx, 225, 95, 20);
-						if(chances == 4)
-							drawLine(ctx, 225, 115, 225, 180);
-						if(chances == 3)
-							drawLine(ctx, 225, 115, 240, 165);
-						if(chances == 2)
-							drawLine(ctx, 225, 115, 210, 165);
-						if(chances == 1)
-							drawLine(ctx, 225, 180, 235, 240);
-						if(chances == 0){
-							drawLine(ctx, 225, 180, 215, 240);
-							newGame = confirm("Game over. Play again?"); //ask to play again.
-							if(newGame){
+					if(!hangmanGame.isRight()) {	//if guess was wrong decrease number of chances to guess
+						//chances--;
+						hangmanGame.decrementGuesses();
+						console.log(hangmanGame.getGuesses());	
+						if(hangmanGame.getGuesses() == 9)
+							drawLine(ctx, 75, 250, 225, 250); //base
+						if(hangmanGame.getGuesses() == 8)
+							drawLine(ctx, 150, 50, 150, 250); //pole
+						if(hangmanGame.getGuesses() == 7)
+							drawLine(ctx, 150, 50, 225, 50); //beam
+						if(hangmanGame.getGuesses() == 6)
+							drawLine(ctx, 225, 50, 225, 75);	//rope
+						if(hangmanGame.getGuesses() == 5)
+							drawCircle(ctx, 225, 95, 20);	//head
+						if(hangmanGame.getGuesses() == 4)
+							drawLine(ctx, 225, 115, 225, 180);	//body
+						if(hangmanGame.getGuesses() == 3)
+							drawLine(ctx, 225, 115, 240, 165);	//right arm
+						if(hangmanGame.getGuesses() == 2)
+							drawLine(ctx, 225, 115, 210, 165);	//left arm
+						if(hangmanGame.getGuesses() == 1)
+							drawLine(ctx, 225, 180, 235, 240);	//right leg
+						if(hangmanGame.getGuesses() == 0){
+							drawLine(ctx, 225, 180, 215, 240);	//left leg
+
+							
+							hangmanGame.setGameStatus(confirm("Game over. Play again?"));
+							
+							if(hangmanGame.isNewGame()){
 								document.getElementById("gameboard").innerHTML = "Press any key to start!";
 							}
 
 						}
 
 						
-						document.getElementById("guesses").innerHTML = chances;
-						lettersUsed.push(String.fromCharCode(event.keyCode));
-						document.getElementById("letters").innerHTML = lettersUsed;
+						document.getElementById("guesses").innerHTML = hangmanGame.getGuesses();
+						
+						hangmanGame.addToUsedList(String.fromCharCode(event.keyCode));
+						
+						document.getElementById("letters").innerHTML = hangmanGame.getUsedList();
 
 
 					}
 						
-					flag = false;	//reset flag
-					letterCheck[bucketKey] = 1; //mark letter in bucket as used
+					hangmanGame.setIsRight(false);	//reset flag
+					
+					hangmanGame.setBucket(bucketKey);
 				}
 				else {//if player won
 					console.log("winner!"); //declare player winner
-					win++;
+					
+					hangmanGame.incrementWins();
 
-					document.getElementById("wins").innerHTML = win;
+					document.getElementById("wins").innerHTML = hangmanGame.getWins();
 
-					newGame = confirm("Congrats! Wanna play again?"); //ask to play again
-					if(newGame){
+					
+					hangmanGame.setGameStatus(confirm("Congrats! Wanna play again?"));
+					
+					if(hangmanGame.isNewGame()){
 						document.getElementById("gameboard").innerHTML = "Press any key to start!";
 					}
 				}
 
 			}//check if letter is chosen
 			else console.log("pick another letter"); //if bucket is marked true prompt to pick another letter
-		}//if chances end
+		}//if there are guesses left end
 		else{
 			console.log("game over");	//if number of chances are used up declare game over
-			newGame = confirm("Game over. Play again?"); //ask to play again.
-			if(newGame){
+			
+			hangmanGame.setGameStatus(confirm("Game over. Play again?")); //ask to play again.
+			
+			if(hangmanGame.isNewGame()){
 						document.getElementById("gameboard").innerHTML = "Press any key to start!";
 					}
-		}
-	}
+		}//else end
+	}//else end
 
 }//input
-	
-
-
-
-
